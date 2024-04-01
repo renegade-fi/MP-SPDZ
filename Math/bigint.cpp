@@ -14,37 +14,55 @@ thread_local bigint bigint::tmp = 0;
 thread_local bigint bigint::tmp2 = 0;
 thread_local gmp_random bigint::random;
 
+/// Print the bigint
+void bigint::print() const
+{
+  cout << *this;
+}
 
-bigint powerMod(const bigint& x,const bigint& e,const bigint& p)
+bigint powerMod(const bigint &x, const bigint &e, const bigint &p)
 {
   bigint ans;
-  if (e>=0)
-    { mpz_powm(ans.get_mpz_t(),x.get_mpz_t(),e.get_mpz_t(),p.get_mpz_t()); }
+  if (e >= 0)
+  {
+    mpz_powm(ans.get_mpz_t(), x.get_mpz_t(), e.get_mpz_t(), p.get_mpz_t());
+  }
   else
-    { bigint xi,ei=-e;
-      invMod(xi,x,p);
-      mpz_powm(ans.get_mpz_t(),xi.get_mpz_t(),ei.get_mpz_t(),p.get_mpz_t()); 
-    }
-      
+  {
+    bigint xi, ei = -e;
+    invMod(xi, x, p);
+    mpz_powm(ans.get_mpz_t(), xi.get_mpz_t(), ei.get_mpz_t(), p.get_mpz_t());
+  }
+
   return ans;
 }
 
-
-int powerMod(int x,int e,int p)
+int powerMod(int x, int e, int p)
 {
-  if (e==1) { return x; }
-  if (e==0) { return 1; }
-  if (e<0)
-     { throw not_implemented(); }
-   int t=x,ans=1;
-   while (e!=0)
-     { if ((e&1)==1) { ans=(ans*t)%p; }
-       e>>=1;
-       t=(t*t)%p;
-     }
+  if (e == 1)
+  {
+    return x;
+  }
+  if (e == 0)
+  {
+    return 1;
+  }
+  if (e < 0)
+  {
+    throw not_implemented();
+  }
+  int t = x, ans = 1;
+  while (e != 0)
+  {
+    if ((e & 1) == 1)
+    {
+      ans = (ans * t) % p;
+    }
+    e >>= 1;
+    t = (t * t) % p;
+  }
   return ans;
 }
-
 
 size_t bigint::report_size(ReportType type) const
 {
@@ -73,21 +91,20 @@ int limb_size<int>()
   return 0;
 }
 
-bigint::bigint(const Integer& x) : bigint(SignedZ2<64>(x))
+bigint::bigint(const Integer &x) : bigint(SignedZ2<64>(x))
 {
 }
 
-
-bigint::bigint(const GC::Clear& x) : bigint(SignedZ2<64>(x))
+bigint::bigint(const GC::Clear &x) : bigint(SignedZ2<64>(x))
 {
 }
 
-bigint::bigint(const mp_limb_t* data, size_t n_limbs)
+bigint::bigint(const mp_limb_t *data, size_t n_limbs)
 {
   mpz_import(get_mpz_t(), n_limbs, -1, 8, -1, 0, data);
 }
 
-string to_string(const bigint& x)
+string to_string(const bigint &x)
 {
   stringstream ss;
   ss << x;
