@@ -17,12 +17,6 @@ unique_ptr<Plaintext_mod_prime> new_plaintext(const FHE_Params &params)
   return make_unique<Plaintext_mod_prime>(params);
 }
 
-void set_element_int(Plaintext_mod_prime &plaintext, size_t i, uint32_t value)
-{
-  // Convert to bigint to preserve sign
-  plaintext.set_element(i, bigint(value));
-}
-
 unique_ptr<Plaintext_mod_prime> add_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y)
 {
   return make_unique<Plaintext_mod_prime>((x + y));
@@ -38,6 +32,12 @@ unique_ptr<Plaintext_mod_prime> mul_plaintexts(const Plaintext_mod_prime &x, con
   return make_unique<Plaintext_mod_prime>((x * y));
 }
 
+void set_element_int(Plaintext_mod_prime &plaintext, size_t i, uint32_t value)
+{
+  // Convert to bigint to preserve sign
+  plaintext.set_element(i, bigint(value));
+}
+
 uint32_t get_element_int(const Plaintext_mod_prime &plaintext, size_t i)
 {
   // Get the element
@@ -49,6 +49,16 @@ uint32_t get_element_int(const Plaintext_mod_prime &plaintext, size_t i)
   pt_gfp.get().to_bigint(tmp, zp_data, true /* reduce */);
 
   return tmp.get_ui();
+}
+
+void set_element_bigint(Plaintext_mod_prime &plaintext, size_t i, const bigint &value)
+{
+  plaintext.set_element(i, value);
+}
+
+unique_ptr<bigint> get_element_bigint(const Plaintext_mod_prime &plaintext, size_t i)
+{
+  return make_unique<bigint>(plaintext.element(i));
 }
 
 /**

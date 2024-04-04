@@ -282,5 +282,9 @@ unique_ptr<Plaintext_mod_prime> mul_plaintexts(const Plaintext_mod_prime &x, con
 void set_element_int(Plaintext_mod_prime &plaintext, size_t i, uint32_t value);
 /// Get the element at index i as an integer value
 uint32_t get_element_int(const Plaintext_mod_prime &plaintext, size_t i);
+/// Set the element at index i to a bigint value
+void set_element_bigint(Plaintext_mod_prime &plaintext, size_t i, const bigint &value);
+/// Get the element at index i as a bigint value
+unique_ptr<bigint> get_element_bigint(const Plaintext_mod_prime &plaintext, size_t i);
 
 #endif
