@@ -23,6 +23,21 @@ void set_element_int(Plaintext_mod_prime &plaintext, size_t i, uint32_t value)
   plaintext.set_element(i, bigint(value));
 }
 
+unique_ptr<Plaintext_mod_prime> add_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y)
+{
+  return make_unique<Plaintext_mod_prime>((x + y));
+}
+
+unique_ptr<Plaintext_mod_prime> sub_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y)
+{
+  return make_unique<Plaintext_mod_prime>((x - y));
+}
+
+unique_ptr<Plaintext_mod_prime> mul_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y)
+{
+  return make_unique<Plaintext_mod_prime>((x * y));
+}
+
 uint32_t get_element_int(const Plaintext_mod_prime &plaintext, size_t i)
 {
   // Get the element
