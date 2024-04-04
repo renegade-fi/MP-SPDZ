@@ -13,6 +13,7 @@ using namespace std;
 #include "Tools/octetStream.h"
 #include "Tools/avx_memcpy.h"
 #include "Protocols/config.h"
+#include "rust/cxx.h"
 
 enum ReportType
 {
@@ -335,5 +336,18 @@ inline int Hwt(int N)
 
 template <class T>
 int limb_size();
+
+/**
+ * FFI Exports
+ */
+
+/// Convert a byte array to a bigint
+///
+/// Allocate a new bigint
+unique_ptr<bigint> bigint_from_be_bytes(uint8_t *bytes, size_t len);
+/// Convert a byte array to a bigint
+///
+/// Allocates a new buffer
+rust::Vec<uint8_t> bigint_to_be_bytes(const bigint &x);
 
 #endif

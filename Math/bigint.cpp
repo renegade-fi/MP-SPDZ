@@ -14,11 +14,41 @@ thread_local bigint bigint::tmp = 0;
 thread_local bigint bigint::tmp2 = 0;
 thread_local gmp_random bigint::random;
 
+/**
+ * FFI Exports
+ */
+
 /// Print the bigint
 void bigint::print() const
 {
   cout << *this;
 }
+
+unique_ptr<bigint> bigint_from_be_bytes(uint8_t *data, size_t size)
+{
+  unique_ptr<bigint> res(new bigint());
+
+  bigintFromBytes(*res, data, size);
+  return res;
+}
+
+rust::Vec<uint8_t> bigint_to_be_bytes(const bigint &x)
+{
+  auto size = numBytes(x);
+  vector<uint8_t> res = vector<uint8_t>(size);
+  bytesFromBigint(res.data(), x, size);
+
+  // Convert the std vec into a rust vec
+  rust::Vec<uint8_t> rust_res;
+  rust_res.reserve(size);
+
+  std::copy(res.begin(), res.end(), std::back_inserter(rust_res));
+  return rust_res;
+}
+
+/**
+ * Implementation
+ */
 
 bigint powerMod(const bigint &x, const bigint &e, const bigint &p)
 {
