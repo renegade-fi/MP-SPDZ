@@ -21,7 +21,7 @@ bigint SPDZ_Data_Setup_Primes(int lgp)
   return p;
 }
 
-void SPDZ_Data_Setup_Primes(bigint& p,int lgp,int& idx,int& m)
+void SPDZ_Data_Setup_Primes(bigint &p, int lgp, int &idx, int &m)
 {
 #ifdef VERBOSE
   cerr << "Setting up parameters" << endl;
@@ -31,40 +31,41 @@ void SPDZ_Data_Setup_Primes(bigint& p,int lgp,int& idx,int& m)
   generate_prime(p, lgp, m);
 }
 
-int default_m(int& lgp, int& idx)
+int default_m(int &lgp, int &idx)
 {
   int m;
   switch (lgp)
-    { case -1:
-        m=16;
-        idx=1;    // Any old figures will do, but need to be for lgp at last
-        lgp=32;   // Switch to bigger prime to get parameters
-        break;
-      case 32:
-        m=8192;
-        idx=0;
-        break;
-      case 64:
-        m=16384;
-        idx=1;
-        break;
-      case 128:
-        m=32768; 
-        idx=2;
-        break;
-      case 256: 
-        m=32768;
-        idx=3;
-        break;
-      case 512:
-        m=65536;
-        idx=4;
-        break;
-      default:
-        m=1;
-        idx=0;
-        break;
-    }
+  {
+  case -1:
+    m = 16;
+    idx = 1;  // Any old figures will do, but need to be for lgp at last
+    lgp = 32; // Switch to bigger prime to get parameters
+    break;
+  case 32:
+    m = 8192;
+    idx = 0;
+    break;
+  case 64:
+    m = 16384;
+    idx = 1;
+    break;
+  case 128:
+    m = 32768;
+    idx = 2;
+    break;
+  case 256:
+    m = 32768;
+    idx = 3;
+    break;
+  case 512:
+    m = 65536;
+    idx = 4;
+    break;
+  default:
+    m = 1;
+    idx = 0;
+    break;
+  }
 #ifdef VERBOSE
   cerr << "m = " << m << endl;
 #endif
@@ -78,26 +79,26 @@ bigint generate_prime(int lgp, int m)
   return p;
 }
 
-void generate_prime(bigint& p, int lgp, int m)
+void generate_prime(bigint &p, int lgp, int m)
 {
   if (OnlineOptions::singleton.prime > 0)
+  {
+    p = OnlineOptions::singleton.prime;
+    if (!probPrime(p))
     {
-      p = OnlineOptions::singleton.prime;
-      if (!probPrime(p))
-        {
-          cerr << p << " is not a prime" << endl;
-          exit(1);
-        }
-      else if (m != 1 and p % m != 1)
-        {
-          cerr << p
-              << " is not compatible with our encryption scheme, must be 1 modulo "
-              << m << endl;
-          exit(1);
-        }
-      else
-          return;
+      cerr << p << " is not a prime" << endl;
+      exit(1);
     }
+    else if (m != 1 and p % m != 1)
+    {
+      cerr << p
+           << " is not compatible with our encryption scheme, must be 1 modulo "
+           << m << endl;
+      exit(1);
+    }
+    else
+      return;
+  }
 
   int idx;
   m = max(m, default_m(lgp, idx));
@@ -107,15 +108,15 @@ void generate_prime(bigint& p, int lgp, int m)
   ex = lgp - numBits(m);
   if (ex < 0)
     throw runtime_error(to_string(lgp) + "-bit primes too small "
-            "for our parameters");
+                                         "for our parameters");
   u = 1;
   u = (u << ex) * m;
   p = u + 1;
   while (!probPrime(p) || numBits(p) < lgp)
-    {
-      u = u + m;
-      p = u + 1;
-    }
+  {
+    u = u + m;
+    p = u + 1;
+  }
 
 #ifdef VERBOSE
   cerr << "\t p = " << p << "  u = " << u << "  :   ";
@@ -123,8 +124,7 @@ void generate_prime(bigint& p, int lgp, int m)
 #endif
 }
 
-
-void write_online_setup(string dirname, const bigint& p)
+void write_online_setup(string dirname, const bigint &p)
 {
   if (p == 0)
     throw runtime_error("prime cannot be 0");
@@ -159,8 +159,8 @@ void check_setup(string dir, bigint pr)
     throw setup_error("wrong modulus in " + filename);
 }
 
-string get_prep_sub_dir(const string& prep_dir, int nparties, int log2mod,
-        const string& type_short, bool create)
+string get_prep_sub_dir(const string &prep_dir, int nparties, int log2mod,
+                        const string &type_short, bool create)
 {
   string res = prep_dir + "/" + to_string(nparties) + "-" + type_short;
   if (log2mod > 1)

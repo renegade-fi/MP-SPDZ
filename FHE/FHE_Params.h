@@ -43,6 +43,7 @@ public:
   FHE_Params(int n_mults = 1, int drown_sec = DEFAULT_SECURITY);
 
   int n_mults() const { return FFTData.size() - 1; }
+  uint32_t n_plaintext_slots() const { return static_cast<uint32_t>(fd.phi_m()); }
 
   void set(const Ring &R, const vector<bigint> &primes);
   void set(const vector<bigint> &primes);
@@ -81,6 +82,11 @@ public:
    * @param plaintext_length bit length of prime
    */
   void basic_generation_mod_prime(int plaintext_length);
+
+  /**
+   * Generate parameters for computation by explictly setting the plaintext modulus
+   */
+  void param_generation_with_modulus(const bigint &plaintext_modulus);
 
   template <class FD>
   const FD &get_plaintext_field_data() const;
