@@ -275,8 +275,8 @@ unique_ptr<FHE_PK> get_pk(const FHE_KeyPair &pair);
 /// Get the secret key from a key pair
 unique_ptr<FHE_SK> get_sk(const FHE_KeyPair &pair);
 /// Encrypt a message with the keypair
-unique_ptr<Ciphertext> encrypt(const FHE_KeyPair &pair, const Plaintext_mod_prime &mess);
+unique_ptr<Ciphertext> encrypt(const FHE_PK &pk, const Plaintext_mod_prime &mess);
 /// Decrypt a message with the keypair
-unique_ptr<Plaintext_mod_prime> decrypt(FHE_KeyPair &pair, const Ciphertext &cipher);
+unique_ptr<Plaintext_mod_prime> decrypt(FHE_SK &sk, const Ciphertext &cipher);
 
 #endif

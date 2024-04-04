@@ -223,7 +223,7 @@ public:
     ::mul(*this, x, y);
   }
 
-  Plaintext operator*(const Plaintext &x)
+  Plaintext operator*(const Plaintext &x) const
   {
     Plaintext res(*Field_Data);
     res.mul(*this, x);
@@ -270,6 +270,14 @@ typedef Plaintext_<FFT_Data> Plaintext_mod_prime;
 
 /// Create a new plaintext object
 unique_ptr<Plaintext_mod_prime> new_plaintext(const FHE_Params &params);
+
+/// Add two plaintexts together
+unique_ptr<Plaintext_mod_prime> add_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y);
+/// Subtract one plaintext from another
+unique_ptr<Plaintext_mod_prime> sub_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y);
+/// Multiply two plaintexts together
+unique_ptr<Plaintext_mod_prime> mul_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y);
+
 /// Set the element at index i to an integer value
 void set_element_int(Plaintext_mod_prime &plaintext, size_t i, uint32_t value);
 /// Get the element at index i as an integer value

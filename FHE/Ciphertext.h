@@ -94,7 +94,7 @@ public:
   void mul(const Ciphertext &c, const Plaintext_<FD> &a) { ::mul(*this, c, a); }
 
   template <class FD>
-  Ciphertext operator+(const Plaintext_<FD> &other)
+  Ciphertext operator+(const Plaintext_<FD> &other) const
   {
     Ciphertext res = *this;
     res += other;
@@ -199,6 +199,14 @@ public:
  * FFI Exports
  */
 
+/// Add a ciphertext and a plaintext
+///
+/// Allocates a result
+unique_ptr<Ciphertext> add_plaintext(const Ciphertext &c, const Plaintext_mod_prime &p);
+/// Multiply a ciphertext and a plaintext
+///
+/// Allocates a result
+unique_ptr<Ciphertext> mul_plaintext(const Ciphertext &c, const Plaintext_mod_prime &p);
 /// Add two ciphertexts
 ///
 /// Allocates a result

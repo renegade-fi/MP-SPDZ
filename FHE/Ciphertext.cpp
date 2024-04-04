@@ -8,6 +8,16 @@
  * FFI Exports
  */
 
+unique_ptr<Ciphertext> add_plaintext(const Ciphertext &c, const Plaintext_mod_prime &p)
+{
+  return make_unique<Ciphertext>(c + p);
+}
+
+unique_ptr<Ciphertext> mul_plaintext(const Ciphertext &c, const Plaintext_mod_prime &p)
+{
+  return make_unique<Ciphertext>(c * p);
+}
+
 unique_ptr<Ciphertext> add_ciphertexts(const Ciphertext &c0, const Ciphertext &c1)
 {
   unique_ptr<Ciphertext> result(new Ciphertext(c0.get_params()));

@@ -28,14 +28,14 @@ unique_ptr<FHE_SK> get_sk(const FHE_KeyPair &pair)
   return unique_ptr<FHE_SK>(new FHE_SK(pair.sk));
 }
 
-unique_ptr<Ciphertext> encrypt(const FHE_KeyPair &pair, const Plaintext_<FFT_Data> &mess)
+unique_ptr<Ciphertext> encrypt(const FHE_PK &pk, const Plaintext_<FFT_Data> &mess)
 {
-  return make_unique<Ciphertext>(pair.pk.encrypt(mess));
+  return make_unique<Ciphertext>(pk.encrypt(mess));
 }
 
-unique_ptr<Plaintext_mod_prime> decrypt(FHE_KeyPair &pair, const Ciphertext &c)
+unique_ptr<Plaintext_mod_prime> decrypt(FHE_SK &sk, const Ciphertext &c)
 {
-  return make_unique<Plaintext_mod_prime>(pair.sk.decrypt(c));
+  return make_unique<Plaintext_mod_prime>(sk.decrypt(c));
 }
 
 /**
