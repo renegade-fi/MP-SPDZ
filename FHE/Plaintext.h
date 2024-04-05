@@ -101,6 +101,11 @@ public:
   /// Initialization
   Plaintext(const FHE_Params &params);
 
+  /**
+   * Clone the Plaintext, made explicit here to support cloning across the ffi
+   */
+  unique_ptr<Plaintext> clone() const { return unique_ptr<Plaintext>(new Plaintext(*this)); }
+
   void allocate(PT_Type type) const;
   void allocate() const { allocate(type); }
   void allocate_slots(const bigint &value);

@@ -56,6 +56,8 @@ public:
 
   // Print the bigint
   void print() const;
+  /// Create a copy of the bigint
+  inline unique_ptr<bigint> clone() const { return unique_ptr<bigint>(new bigint(*this)); }
 
   // workaround for GCC not always initializing thread_local variables
   static void init_thread()

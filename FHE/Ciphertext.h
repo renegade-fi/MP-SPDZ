@@ -44,6 +44,11 @@ public:
     set(a0, a1, C.get_pk_id());
   }
 
+  /**
+   * Clone the value, made explicit here to support clones across the ffi
+   */
+  unique_ptr<Ciphertext> clone() const { return unique_ptr<Ciphertext>(new Ciphertext(*this)); }
+
   // Rely on default copy assignment/constructor
 
   word get_pk_id() const { return pk_id; }
