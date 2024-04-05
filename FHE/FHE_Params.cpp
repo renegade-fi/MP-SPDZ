@@ -126,6 +126,16 @@ void FHE_Params::basic_generation_mod_prime(int plaintext_length)
   }
 }
 
+void FHE_Params::param_generation_with_modulus(const bigint &plaintext_modulus)
+{
+  // Set the modulus via the `OnlineOptions` singleton
+  OnlineOptions::singleton.prime = plaintext_modulus;
+
+  // Generate parameters
+  int bits = plaintext_modulus.numBits();
+  basic_generation_mod_prime(bits);
+}
+
 template <>
 const FFT_Data &FHE_Params::get_plaintext_field_data() const
 {
