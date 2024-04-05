@@ -27,6 +27,11 @@ public:
 
   const FHE_Params &get_params() const { return *params; }
 
+  /**
+   * Clone the value, made explicit here to support clones across the ffi
+   */
+  unique_ptr<FHE_SK> clone() const { return unique_ptr<FHE_SK>(new FHE_SK(*this)); }
+
   bigint p() const { return pr; }
 
   // secret key always on lower level
@@ -135,6 +140,11 @@ class FHE_PK
 public:
   const FHE_Params &get_params() const { return *params; }
 
+  /**
+   * Clone the value, made explicit here to support clones across the ffi
+   */
+  unique_ptr<FHE_PK> clone() const { return unique_ptr<FHE_PK>(new FHE_PK(*this)); }
+
   bigint p() const { return pr; }
 
   void assign(const Rq_Element &a, const Rq_Element &b,
@@ -241,6 +251,11 @@ public:
   FHE_KeyPair(const FHE_Params &params) : pk(params), sk(params)
   {
   }
+
+  /**
+   * Clone the value, made explicit here to support clones across the ffi
+   */
+  unique_ptr<FHE_KeyPair> clone() const { return unique_ptr<FHE_KeyPair>(new FHE_KeyPair(*this)); }
 
   void generate(PRNG &G)
   {

@@ -42,6 +42,12 @@ public:
    */
   FHE_Params(int n_mults = 1, int drown_sec = DEFAULT_SECURITY);
 
+  /**
+   * Clone the FHE_Params
+   * Made explicit here to support clnoning across the ffi
+   */
+  unique_ptr<FHE_Params> clone() const { return unique_ptr<FHE_Params>(new FHE_Params(*this)); };
+
   int n_mults() const { return FFTData.size() - 1; }
   uint32_t n_plaintext_slots() const { return static_cast<uint32_t>(fd.phi_m()); }
 
