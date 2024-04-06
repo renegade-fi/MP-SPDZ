@@ -14,87 +14,102 @@
 #include "Tools/time-func.h"
 #include "Tools/FlexBuffer.h"
 
-
 void octetStream::reset()
 {
-    data = 0;
-    len = mxlen = ptr = 0;
+  data = 0;
+  len = mxlen = ptr = 0;
 }
 
 void octetStream::clear()
 {
-    if (data)
-        delete[] data;
-    data = 0;
-    len = mxlen = ptr = 0;
+  if (data)
+    delete[] data;
+  data = 0;
+  len = mxlen = ptr = 0;
 }
 
-void octetStream::assign(const octetStream& os)
+void octetStream::assign(const octetStream &os)
 {
-  if (os.len>=mxlen)
-    {
-      if (data)
-        delete[] data;
-      mxlen=os.mxlen;  
-      data=new octet[mxlen];
-    }
-  len=os.len;
-  memcpy(data,os.data,len*sizeof(octet));
-  ptr=os.ptr;
+  if (os.len >= mxlen)
+  {
+    if (data)
+      delete[] data;
+    mxlen = os.mxlen;
+    data = new octet[mxlen];
+  }
+  len = os.len;
+  memcpy(data, os.data, len * sizeof(octet));
+  ptr = os.ptr;
   bits = os.bits;
 }
 
-
 octetStream::octetStream(size_t maxlen)
 {
-  mxlen=maxlen; len=0; ptr=0;
-  data=new octet[mxlen];
+  mxlen = maxlen;
+  len = 0;
+  ptr = 0;
+  data = new octet[mxlen];
 }
 
-octetStream::octetStream(size_t len, const octet* source) :
-    octetStream(len)
+octetStream::octetStream(size_t len, const octet *source) : octetStream(len)
 {
   append(source, len);
 }
 
-octetStream::octetStream(const string& other) :
-    octetStream(other.size(), (const octet*)other.data())
+octetStream::octetStream(const string &other) : octetStream(other.size(), (const octet *)other.data())
 {
 }
 
-octetStream::octetStream(const octetStream& os)
+octetStream::octetStream(const octetStream &os)
 {
-  mxlen=os.mxlen;
-  len=os.len;
-  data=new octet[mxlen];
-  memcpy(data,os.data,len*sizeof(octet));
-  ptr=os.ptr;
+  mxlen = os.mxlen;
+  len = os.len;
+  data = new octet[mxlen];
+  memcpy(data, os.data, len * sizeof(octet));
+  ptr = os.ptr;
   bits = os.bits;
 }
 
-octetStream::octetStream(FlexBuffer& buffer)
+octetStream::octetStream(FlexBuffer &buffer)
 {
   mxlen = buffer.capacity();
   len = buffer.size();
-  data = (octet*)buffer.data();
+  data = (octet *)buffer.data();
   ptr = buffer.ptr - buffer.data();
   buffer.reset();
 }
 
+octetStream::octetStream(const rust::Slice<const uint8_t> &slice)
+{
+  mxlen = slice.size();
+  len = slice.size();
+  ptr = 0;
+
+  // Copy over the data
+  data = new octet[mxlen];
+  memcpy(data, slice.data(), len * sizeof(octet));
+}
+
+rust::Vec<uint8_t> octetStream::to_rust_vec() const
+{
+  rust::Vec<uint8_t> res;
+  res.reserve(len);
+  std::copy(data, data + len, std::back_inserter(res));
+
+  return res;
+}
 
 string octetStream::str() const
 {
-  return string((char*) get_data(), get_length());
+  return string((char *)get_data(), get_length());
 }
 
-
-void octetStream::hash(octetStream& output) const
+void octetStream::hash(octetStream &output) const
 {
   assert(output.mxlen >= crypto_generichash_blake2b_BYTES_MIN);
   crypto_generichash(output.data, crypto_generichash_BYTES_MIN, data, len, NULL, 0);
-  output.len=crypto_generichash_BYTES_MIN;
+  output.len = crypto_generichash_BYTES_MIN;
 }
-
 
 octetStream octetStream::hash() const
 {
@@ -103,45 +118,43 @@ octetStream octetStream::hash() const
   return h;
 }
 
-
 bigint octetStream::check_sum(int req_bytes) const
 {
   unsigned char hash[req_bytes];
   crypto_generichash(hash, req_bytes, data, len, NULL, 0);
 
   bigint ans;
-  bigintFromBytes(ans,hash,req_bytes);
+  bigintFromBytes(ans, hash, req_bytes);
   // cout << ans << "\n";
   return ans;
 }
 
-
-bool octetStream::equals(const octetStream& a) const
+bool octetStream::equals(const octetStream &a) const
 {
-  if (len!=a.len) { return false; }
+  if (len != a.len)
+  {
+    return false;
+  }
   return memcmp(data, a.data, len) == 0;
 }
-
 
 void octetStream::append_random(size_t num)
 {
   randombytes_buf(append(num), num);
 }
 
-
-void octetStream::concat(const octetStream& os)
+void octetStream::concat(const octetStream &os)
 {
-  memcpy(append(os.len), os.data, os.len*sizeof(octet));
+  memcpy(append(os.len), os.data, os.len * sizeof(octet));
 }
 
-
-void octetStream::store_bytes(octet* x, const size_t l)
+void octetStream::store_bytes(octet *x, const size_t l)
 {
   encode_length(append(4), l, 4);
-  memcpy(append(l), x, l*sizeof(octet));
+  memcpy(append(l), x, l * sizeof(octet));
 }
 
-void octetStream::get_bytes(octet* ans, size_t& length)
+void octetStream::get_bytes(octet *ans, size_t &length)
 {
   length = get_int(4);
   memcpy(ans, consume(length), length * sizeof(octet));
@@ -152,104 +165,101 @@ void octetStream::store(int l)
   encode_length(append(4), l, 4);
 }
 
-
-void octetStream::get(int& l)
+void octetStream::get(int &l)
 {
   l = get_int(4);
 }
 
-
-void octetStream::store(const bigint& x)
+void octetStream::store(const bigint &x)
 {
-  size_t num=numBytes(x);
+  size_t num = numBytes(x);
   *append(1) = x < 0;
   encode_length(append(4), num, 4);
   bytesFromBigint(append(num), x, num);
 }
 
-
-void octetStream::get(bigint& ans)
+void octetStream::get(bigint &ans)
 {
   int sign = *consume(1);
-  if (sign!=0 && sign!=1) { throw bad_value(); }
+  if (sign != 0 && sign != 1)
+  {
+    throw bad_value();
+  }
 
   long length = get_int(4);
 
-  if (length!=0)
-    {
-      bigintFromBytes(ans, consume(length), length);
-      if (sign)
-        mpz_neg(ans.get_mpz_t(), ans.get_mpz_t());
-    }
+  if (length != 0)
+  {
+    bigintFromBytes(ans, consume(length), length);
+    if (sign)
+      mpz_neg(ans.get_mpz_t(), ans.get_mpz_t());
+  }
   else
-    ans=0;
+    ans = 0;
 }
 
-
-void octetStream::store(const string& str)
+void octetStream::store(const string &str)
 {
   store(str.length());
-  append((const octet*) str.data(), str.length());
+  append((const octet *)str.data(), str.length());
 }
 
-
-void octetStream::get(string& str)
+void octetStream::get(string &str)
 {
   size_t size;
   get(size);
-  str.assign((const char*) consume(size), size);
+  str.assign((const char *)consume(size), size);
 }
 
-
-template<class T>
-void octetStream::exchange(T send_socket, T receive_socket, octetStream& receive_stream) const
+template <class T>
+void octetStream::exchange(T send_socket, T receive_socket, octetStream &receive_stream) const
 {
   Exchanger<T> exchanger(send_socket, *this, receive_socket, receive_stream);
   while (exchanger.round())
     ;
 }
 
-
-void octetStream::input(istream& s)
+void octetStream::input(istream &s)
 {
   size_t size;
-  s.read((char*)&size, sizeof(size));
+  s.read((char *)&size, sizeof(size));
   if (not s.good())
     throw IO_Error("not enough data");
   resize_min(size);
-  s.read((char*)data, size);
+  s.read((char *)data, size);
   len = size;
   if (not s.good())
     throw IO_Error("not enough data");
 }
 
-void octetStream::output(ostream& s)
+void octetStream::output(ostream &s)
 {
-  s.write((char*)&len, sizeof(len));
-  s.write((char*)data, len);
+  s.write((char *)&len, sizeof(len));
+  s.write((char *)data, len);
 }
 
-ostream& operator<<(ostream& s,const octetStream& o)
+ostream &operator<<(ostream &s, const octetStream &o)
 {
-  for (size_t i=0; i<o.len; i++)
-    { int t0=o.data[i]&15;
-      int t1=o.data[i]>>4;
-      s << hex << t1 << t0 << dec;
-    }
+  for (size_t i = 0; i < o.len; i++)
+  {
+    int t0 = o.data[i] & 15;
+    int t1 = o.data[i] >> 4;
+    s << hex << t1 << t0 << dec;
+  }
   return s;
 }
 
-octetStreams::octetStreams(const Player& P)
+octetStreams::octetStreams(const Player &P)
 {
   reset(P);
 }
 
-void octetStreams::reset(const Player& P)
+void octetStreams::reset(const Player &P)
 {
   resize(P.num_players());
-  for (auto& o : *this)
+  for (auto &o : *this)
     o.reset_write_head();
 }
 
-template void octetStream::exchange(int, int, octetStream&) const;
-template void octetStream::exchange(ssl_socket*, ssl_socket*, octetStream&) const;
+template void octetStream::exchange(int, int, octetStream &) const;
+template void octetStream::exchange(ssl_socket *, ssl_socket *, octetStream &) const;

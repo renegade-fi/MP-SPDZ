@@ -8,6 +8,7 @@
 #include "FHE/Random_Coins.h"
 #include "FHE/Ciphertext.h"
 #include "FHE/Plaintext.h"
+#include "rust/cxx.h"
 
 class FHE_PK;
 class Ciphertext;
@@ -51,6 +52,9 @@ public:
   }
 
   FHE_SK(const FHE_PK &pk);
+
+  // Rust FFI serialization
+  rust::Vec<uint8_t> to_rust_bytes() const;
 
   // Rely on default copy constructor/assignment
 
@@ -183,6 +187,9 @@ public:
   {
   }
 
+  // Rust FFI serialization
+  rust::Vec<uint8_t> to_rust_bytes() const;
+
   // Rely on default copy constructor/assignment
 
   const Rq_Element &a() const { return a0; }
@@ -220,6 +227,7 @@ public:
 
   /// Append to buffer
   void pack(octetStream &o) const;
+  void pack_with_params(octetStream &o) const;
 
   /// Read from buffer. Assumes parameters are set correctly
   void unpack(octetStream &o);
@@ -251,6 +259,9 @@ public:
   FHE_KeyPair(const FHE_Params &params) : pk(params), sk(params)
   {
   }
+
+  /// FFI serialization
+  rust::Vec<uint8_t> to_rust_bytes() const;
 
   /**
    * Clone the value, made explicit here to support clones across the ffi
@@ -293,5 +304,11 @@ unique_ptr<FHE_SK> get_sk(const FHE_KeyPair &pair);
 unique_ptr<Ciphertext> encrypt(const FHE_PK &pk, const Plaintext_mod_prime &mess);
 /// Decrypt a message with the keypair
 unique_ptr<Plaintext_mod_prime> decrypt(FHE_SK &sk, const Ciphertext &cipher);
+/// FFI deserialization for public key
+unique_ptr<FHE_PK> pk_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params);
+/// FFI deserialization for private key
+unique_ptr<FHE_SK> sk_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params);
+/// FFI serialization for keypair
+unique_ptr<FHE_KeyPair> keypair_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params);
 
 #endif

@@ -42,6 +42,9 @@ public:
    */
   FHE_Params(int n_mults = 1, int drown_sec = DEFAULT_SECURITY);
 
+  /// FFI serialization
+  rust::Vec<uint8_t> to_rust_bytes() const;
+
   /**
    * Clone the FHE_Params
    * Made explicit here to support clnoning across the ffi
@@ -103,5 +106,7 @@ public:
 /// Exported for rust FFI
 unique_ptr<FHE_Params> new_fhe_params(int n_mults, int drown_sec);
 unique_ptr<bigint> get_plaintext_mod(const FHE_Params &params);
+/// Deserialize a ciphertext
+unique_ptr<FHE_Params> fhe_params_from_rust_bytes(const rust::Slice<const uint8_t> bytes);
 
 #endif

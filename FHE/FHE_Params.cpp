@@ -23,6 +23,23 @@ unique_ptr<bigint> get_plaintext_mod(const FHE_Params &params)
   return make_unique<bigint>(params.get_plaintext_modulus());
 }
 
+rust::Vec<uint8_t> FHE_Params::to_rust_bytes() const
+{
+  octetStream os;
+  pack(os);
+
+  return os.to_rust_vec();
+}
+
+unique_ptr<FHE_Params> fhe_params_from_rust_bytes(const rust::Slice<const uint8_t> bytes)
+{
+  octetStream os(bytes);
+  unique_ptr<FHE_Params> params(new FHE_Params(0, 0));
+  params->unpack(os);
+
+  return params;
+}
+
 /*
  * Implementation
  */

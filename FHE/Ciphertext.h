@@ -4,6 +4,7 @@
 #include "FHE/FHE_Keys.h"
 #include "FHE/Random_Coins.h"
 #include "FHE/Plaintext.h"
+#include "rust/cxx.h"
 
 class FHE_PK;
 class Ciphertext;
@@ -182,6 +183,9 @@ public:
     o.get(pk_id);
   }
 
+  /// FFI serialization
+  rust::Vec<uint8_t> to_rust_bytes() const;
+
   void output(ostream &s) const
   {
     cc0.output(s);
@@ -220,5 +224,7 @@ unique_ptr<Ciphertext> add_ciphertexts(const Ciphertext &c0, const Ciphertext &c
 ///
 /// Allocates a result
 unique_ptr<Ciphertext> mul_ciphertexts(const Ciphertext &c0, const Ciphertext &c1, const FHE_PK &pk);
+/// Deserialize a ciphertext
+unique_ptr<Ciphertext> ciphertext_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params);
 
 #endif
