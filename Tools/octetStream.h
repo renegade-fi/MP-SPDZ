@@ -1,7 +1,6 @@
 #ifndef _octetStream
 #define _octetStream
 
-
 /* This class creates a stream of data and adds stuff onto it.
  * This is used to pack and unpack stuff which is sent over the
  * network
@@ -27,9 +26,10 @@
 #include <stdio.h>
 #include <iostream>
 #include <assert.h>
+#include "rust/cxx.h"
 
 #include <sodium.h>
- 
+
 using namespace std;
 
 class bigint;
@@ -43,9 +43,10 @@ class FlexBuffer;
 class octetStream
 {
   friend class FlexBuffer;
-  template<class T> friend class Exchanger;
+  template <class T>
+  friend class Exchanger;
 
-  size_t len,mxlen,ptr;  // len is the "write head", ptr is the "read head"
+  size_t len, mxlen, ptr; // len is the "write head", ptr is the "read head"
   octet *data;
 
   class BitBuffer
@@ -62,8 +63,7 @@ class octetStream
 
   void reset();
 
-  public:
-
+public:
   /// Increase allocation if needed
   void resize(size_t l);
   void resize_precise(size_t l);
@@ -72,99 +72,129 @@ class octetStream
   /// Free memory
   void clear();
 
-  void assign(const octetStream& os);
+  void assign(const octetStream &os);
 
   octetStream() : len(0), mxlen(0), ptr(0), data(0) {}
   /// Initial allocation
   octetStream(size_t maxlen);
   /// Initial buffer
-  octetStream(size_t len, const octet* source);
+  octetStream(size_t len, const octet *source);
   /// Initial buffer
-  octetStream(const string& other);
-  octetStream(FlexBuffer& buffer);
-  octetStream(const octetStream& os);
-  octetStream& operator=(const octetStream& os)
-    { if (this!=&os) { assign(os); }
-      return *this;
+  octetStream(const string &other);
+  octetStream(FlexBuffer &buffer);
+  octetStream(const octetStream &os);
+
+  /// Rust serialization/deserialization
+  octetStream(const rust::Slice<const uint8_t> &slice);
+  rust::Vec<uint8_t> to_rust_vec() const;
+
+  octetStream &operator=(const octetStream &os)
+  {
+    if (this != &os)
+    {
+      assign(os);
     }
-  ~octetStream() { if(data) delete[] data; }
-  
+    return *this;
+  }
+  ~octetStream()
+  {
+    if (data)
+      delete[] data;
+  }
+
   /// Number of bytes already read
-  size_t get_ptr() const     { return ptr; }
+  size_t get_ptr() const { return ptr; }
   /// Length
-  size_t get_length() const  { return len; }
+  size_t get_length() const { return len; }
   /// Length including size tag
-  size_t get_total_length() const  { return len + sizeof(len); }
+  size_t get_total_length() const { return len + sizeof(len); }
   /// Allocation
   size_t get_max_length() const { return mxlen; }
   /// Data pointer
-  octet* get_data() const { assert(bits[0].n == 0); return data; }
+  octet *get_data() const
+  {
+    assert(bits[0].n == 0);
+    return data;
+  }
   /// Read pointer
-  octet* get_data_ptr() const { assert(bits[1].n == 0); return data + ptr; }
+  octet *get_data_ptr() const
+  {
+    assert(bits[1].n == 0);
+    return data + ptr;
+  }
 
   /// Whether done reading
-  bool done() const 	  { return ptr == len; }
+  bool done() const { return ptr == len; }
   /// Whether empty
-  bool empty() const 	  { return len == 0; }
+  bool empty() const { return len == 0; }
   /// Bytes left to read
-  size_t left() const 	  { return len - ptr; }
+  size_t left() const { return len - ptr; }
 
   /// Convert to string
   string str() const;
 
   /// Hash content
-  octetStream hash()   const;
+  octetStream hash() const;
   // output must have length at least HASH_SIZE
-  void hash(octetStream& output)   const;
+  void hash(octetStream &output) const;
   // The following produces a check sum for debugging purposes
-  bigint check_sum(int req_bytes=crypto_hash_BYTES)       const;
+  bigint check_sum(int req_bytes = crypto_hash_BYTES) const;
 
   /// Append other buffer
-  void concat(const octetStream& os);
+  void concat(const octetStream &os);
 
   /// Reset reading
-  void reset_read_head()  { ptr = 0; bits[1].n = 0; }
+  void reset_read_head()
+  {
+    ptr = 0;
+    bits[1].n = 0;
+  }
   /// Set length to zero but keep allocation
-  void reset_write_head() { len = 0; bits[0].n = 0; reset_read_head(); }
+  void reset_write_head()
+  {
+    len = 0;
+    bits[0].n = 0;
+    reset_read_head();
+  }
 
   // Move len back num
-  void rewind_write_head(size_t num) { len-=num; }
+  void rewind_write_head(size_t num) { len -= num; }
 
-  bool equals(const octetStream& a) const;
+  bool equals(const octetStream &a) const;
   /// Equality test
-  bool operator==(const octetStream& a) const { return equals(a); }
-  bool operator!=(const octetStream& a) const { return not equals(a); }
+  bool operator==(const octetStream &a) const { return equals(a); }
+  bool operator!=(const octetStream &a) const { return not equals(a); }
 
   /// Append ``num`` random bytes
   void append_random(size_t num);
 
   /// Append ``l`` bytes from ``x``
-  void append(const octet* x,const size_t l);
-  octet* append(const size_t l);
-  void append_no_resize(const octet* x,const size_t l);
+  void append(const octet *x, const size_t l);
+  octet *append(const size_t l);
+  void append_no_resize(const octet *x, const size_t l);
   /// Read ``l`` bytes to ``x``
-  void consume(octet* x,const size_t l);
+  void consume(octet *x, const size_t l);
   // Return pointer to next l octets and advance pointer
-  octet* consume(size_t l);
+  octet *consume(size_t l);
 
   /* Now store and restore different types of data (with padding for decoding) */
 
-  void store_bytes(octet* x, const size_t l); //not really "bytes"...
-  void get_bytes(octet* ans, size_t& l);      //Assumes enough space in ans
+  void store_bytes(octet *x, const size_t l); // not really "bytes"...
+  void get_bytes(octet *ans, size_t &l);      // Assumes enough space in ans
 
   /// Append 4-byte integer
   void store(unsigned int a) { store_int(a, 4); }
   /// Append 4-byte integer
   void store(int a);
   /// Read 4-byte integer
-  void get(unsigned int& a) { a = get_int(4); }
+  void get(unsigned int &a) { a = get_int(4); }
   /// Read 4-byte integer
-  void get(int& a);
+  void get(int &a);
 
   /// Append 8-byte integer
   void store(size_t a) { store_int(a, 8); }
   /// Read 8-byte integer
-  void get(size_t& a) { a = get_int(8); }
+  void get(size_t &a) { a = get_int(8); }
 
   /// Append integer of ``n_bytes`` bytes
   void store_int(size_t a, int n_bytes);
@@ -172,89 +202,90 @@ class octetStream
   size_t get_int(int n_bytes);
 
   /// Append integer of ``N_BYTES`` bytes
-  template<int N_BYTES>
+  template <int N_BYTES>
   void store_int(size_t a);
   /// Read integer of ``N_BYTES`` bytes
-  template<int N_BYTES>
+  template <int N_BYTES>
   size_t get_int();
 
   void store_bit(char a);
   char get_bit();
 
   /// Append big integer
-  void store(const bigint& x);
+  void store(const bigint &x);
   /// Read big integer
-  void get(bigint& ans);
+  void get(bigint &ans);
 
   /// Append instance of type implementing ``pack``
-  template<class T>
-  void store(const T& x);
+  template <class T>
+  void store(const T &x);
 
   /// Read instance of type implementing ``unpack``
-  template<class T>
+  template <class T>
   T get();
   /// Read instance of type implementing ``unpack``
-  template<class T>
-  void get(T& ans);
+  template <class T>
+  void get(T &ans);
 
   // works for all statically allocated types
   template <class T>
-  void serialize(const T& x) { append((octet*)&x, sizeof(x)); }
+  void serialize(const T &x) { append((octet *)&x, sizeof(x)); }
   template <class T>
-  void unserialize(T& x) { consume((octet*)&x, sizeof(x)); }
+  void unserialize(T &x) { consume((octet *)&x, sizeof(x)); }
 
   /// Append vector of type implementing ``pack``
   template <class T>
-  void store(const vector<T>& v);
+  void store(const vector<T> &v);
   /// Read vector of type implementing ``unpack``
   /// @param v results
   /// @param init initialization if required
   template <class T>
-  void get(vector<T>& v, const T& init = {});
+  void get(vector<T> &v, const T &init = {});
   /// Read vector of type implementing ``unpack``
   /// if vector already has the right size
   template <class T>
-  void get_no_resize(vector<T>& v);
+  void get_no_resize(vector<T> &v);
 
   template <class T, size_t L>
-  void store(const array<T, L>& v);
+  void store(const array<T, L> &v);
   template <class T, size_t L>
-  void get(array<T, L>& v);
+  void get(array<T, L> &v);
 
   /// Read ``l`` bytes into separate buffer
-  void consume(octetStream& s,size_t l)
-    { s.resize(l);
-      consume(s.data,l);
-      s.len=l;
-    }
+  void consume(octetStream &s, size_t l)
+  {
+    s.resize(l);
+    consume(s.data, l);
+    s.len = l;
+  }
 
   /// Append string
-  void store(const string& str);
+  void store(const string &str);
   /// Read string
-  void get(string& str);
+  void get(string &str);
 
   /// Send on ``socket_num``
-  template<class T>
+  template <class T>
   void Send(T socket_num) const;
   /// Receive on ``socket_num``, overwriting current content
-  template<class T>
+  template <class T>
   void Receive(T socket_num);
 
   /// Input from stream, overwriting current content
-  void input(istream& s);
+  void input(istream &s);
   /// Output to stream
-  void output(ostream& s);
+  void output(ostream &s);
 
   /// Send on ``socket_num`` while receiving on ``receiving_socket``,
   /// overwriting current content
-  template<class T>
+  template <class T>
   void exchange(T send_socket, T receive_socket) { exchange(send_socket, receive_socket, *this); }
   /// Send this buffer on ``socket_num`` while receiving
   /// to ``receive_stream`` on ``receiving_socket``
-  template<class T>
-  void exchange(T send_socket, T receive_socket, octetStream& receive_stream) const;
+  template <class T>
+  void exchange(T send_socket, T receive_socket, octetStream &receive_stream) const;
 
-  friend ostream& operator<<(ostream& s,const octetStream& o);
+  friend ostream &operator<<(ostream &s, const octetStream &o);
   friend class PRNG;
 };
 
@@ -264,33 +295,34 @@ class octetStreams : public vector<octetStream>
 {
 public:
   octetStreams() {}
-  octetStreams(const Player& P);
+  octetStreams(const Player &P);
 
-  void reset(const Player& P);
+  void reset(const Player &P);
 };
-
 
 inline void octetStream::resize(size_t l)
 {
-  if (l<mxlen) { return; }
-  l=2*l;      // Overcompensate in the resize to avoid calling this a lot
+  if (l < mxlen)
+  {
+    return;
+  }
+  l = 2 * l; // Overcompensate in the resize to avoid calling this a lot
   resize_precise(l);
 }
-
 
 inline void octetStream::resize_precise(size_t l)
 {
   if (l == mxlen)
     return;
 
-  octet* nd=new octet[l];
+  octet *nd = new octet[l];
   if (data)
-    {
-      memcpy(nd, data, min(len, l) * sizeof(octet));
-      delete[] data;
-    }
-  data=nd;
-  mxlen=l;
+  {
+    memcpy(nd, data, min(len, l) * sizeof(octet));
+    delete[] data;
+  }
+  data = nd;
+  mxlen = l;
 }
 
 inline void octetStream::resize_min(size_t l)
@@ -305,44 +337,44 @@ inline void octetStream::reserve(size_t l)
     resize_precise(len + l);
 }
 
-inline octet* octetStream::append(const size_t l)
+inline octet *octetStream::append(const size_t l)
 {
   if (bits[0].n)
-    {
-      bits[0].n = 0;
-      store_int<1>(bits[0].buffer);
-      bits[0].buffer = 0;
-    }
+  {
+    bits[0].n = 0;
+    store_int<1>(bits[0].buffer);
+    bits[0].buffer = 0;
+  }
 
-  if (len+l>mxlen)
-    resize(len+l);
-  octet* res = data + len;
-  len+=l;
+  if (len + l > mxlen)
+    resize(len + l);
+  octet *res = data + len;
+  len += l;
   return res;
 }
 
-inline void octetStream::append(const octet* x, const size_t l)
+inline void octetStream::append(const octet *x, const size_t l)
 {
-  avx_memcpy(append(l), x, l*sizeof(octet));
+  avx_memcpy(append(l), x, l * sizeof(octet));
 }
 
-inline void octetStream::append_no_resize(const octet* x, const size_t l)
+inline void octetStream::append_no_resize(const octet *x, const size_t l)
 {
-  avx_memcpy(data+len,x,l*sizeof(octet));
-  len+=l;
+  avx_memcpy(data + len, x, l * sizeof(octet));
+  len += l;
 }
 
-inline octet* octetStream::consume(size_t l)
+inline octet *octetStream::consume(size_t l)
 {
   bits[1].n = 0;
-  if(ptr + l > len)
+  if (ptr + l > len)
     throw runtime_error("insufficient data");
-  octet* res = data + ptr;
+  octet *res = data + ptr;
   ptr += l;
   return res;
 }
 
-inline void octetStream::consume(octet* x,const size_t l)
+inline void octetStream::consume(octet *x, const size_t l)
 {
   avx_memcpy(x, consume(l), l * sizeof(octet));
 }
@@ -357,7 +389,7 @@ inline size_t octetStream::get_int(int n_bytes)
   return decode_length(consume(n_bytes), n_bytes);
 }
 
-template<int N_BYTES>
+template <int N_BYTES>
 inline void octetStream::store_int(size_t l)
 {
   assert(N_BYTES <= 8);
@@ -365,7 +397,7 @@ inline void octetStream::store_int(size_t l)
   memcpy(append(N_BYTES), &tmp, N_BYTES);
 }
 
-template<int N_BYTES>
+template <int N_BYTES>
 inline size_t octetStream::get_int()
 {
   assert(N_BYTES <= 8);
@@ -376,8 +408,8 @@ inline size_t octetStream::get_int()
 
 inline void octetStream::store_bit(char a)
 {
-  auto& n = bits[0].n;
-  auto& buffer = bits[0].buffer;
+  auto &n = bits[0].n;
+  auto &buffer = bits[0].buffer;
 
   if (n == 8)
     append(0);
@@ -388,111 +420,108 @@ inline void octetStream::store_bit(char a)
 
 inline char octetStream::get_bit()
 {
-  auto& n = bits[1].n;
-  auto& buffer = bits[1].buffer;
+  auto &n = bits[1].n;
+  auto &buffer = bits[1].buffer;
 
   if (n == 0)
-    {
-      buffer = get_int<1>();
-      n = 8;
-    }
+  {
+    buffer = get_int<1>();
+    n = 8;
+  }
 
   return (buffer >> (8 - n--)) & 1;
 }
 
-
-template<class T>
+template <class T>
 inline void octetStream::Send(T socket_num) const
 {
-  send(socket_num,len,LENGTH_SIZE);
+  send(socket_num, len, LENGTH_SIZE);
   send(socket_num, get_data(), len);
 }
 
-
-template<class T>
+template <class T>
 inline void octetStream::Receive(T socket_num)
 {
-  size_t nlen=0;
-  receive(socket_num,nlen,LENGTH_SIZE);
-  len=0;
+  size_t nlen = 0;
+  receive(socket_num, nlen, LENGTH_SIZE);
+  len = 0;
   resize_min(nlen);
-  len=nlen;
+  len = nlen;
 
-  receive(socket_num,data,len);
+  receive(socket_num, data, len);
   reset_read_head();
 }
 
-template<class T>
-void octetStream::store(const T& x)
+template <class T>
+void octetStream::store(const T &x)
 {
-    x.pack(*this);
+  x.pack(*this);
 }
 
-template<class T>
+template <class T>
 T octetStream::get()
 {
-    T res;
-    res.unpack(*this);
-    return res;
+  T res;
+  res.unpack(*this);
+  return res;
 }
 
-template<class T>
-void octetStream::get(T& res)
+template <class T>
+void octetStream::get(T &res)
 {
-    res.unpack(*this);
+  res.unpack(*this);
 }
 
-template<>
+template <>
 inline int octetStream::get()
 {
-    return get_int(sizeof(int));
+  return get_int(sizeof(int));
 }
 
-template<class T>
-void octetStream::store(const vector<T>& v)
+template <class T>
+void octetStream::store(const vector<T> &v)
 {
   store(v.size());
-  for (auto& x : v)
+  for (auto &x : v)
     store(x);
 }
 
-template<class T>
-void octetStream::get(vector<T>& v, const T& init)
+template <class T>
+void octetStream::get(vector<T> &v, const T &init)
 {
   size_t size;
   get(size);
   v.reserve(size);
   for (size_t i = 0; i < size; i++)
-    {
-      v.push_back(init);
-      get(v.back());
-    }
+  {
+    v.push_back(init);
+    get(v.back());
+  }
 }
 
-template<class T>
-void octetStream::get_no_resize(vector<T>& v)
+template <class T>
+void octetStream::get_no_resize(vector<T> &v)
 {
   size_t size;
   get(size);
   if (size != v.size())
     throw runtime_error("wrong vector length");
-  for (auto& x : v)
+  for (auto &x : v)
     get(x);
 }
 
-template<class T, size_t L>
-void octetStream::store(const array<T, L>& v)
+template <class T, size_t L>
+void octetStream::store(const array<T, L> &v)
 {
-  for (auto& x : v)
+  for (auto &x : v)
     store(x);
 }
 
-template<class T, size_t L>
-void octetStream::get(array<T, L>& v)
+template <class T, size_t L>
+void octetStream::get(array<T, L> &v)
 {
-  for (auto& x : v)
+  for (auto &x : v)
     get(x);
 }
 
 #endif
-

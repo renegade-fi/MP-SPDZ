@@ -38,6 +38,59 @@ unique_ptr<Plaintext_mod_prime> decrypt(FHE_SK &sk, const Ciphertext &c)
   return make_unique<Plaintext_mod_prime>(sk.decrypt(c));
 }
 
+rust::Vec<uint8_t> FHE_PK::to_rust_bytes() const
+{
+  octetStream os;
+  pack(os);
+
+  return os.to_rust_vec();
+}
+
+unique_ptr<FHE_PK> pk_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params)
+{
+  octetStream os(bytes);
+  auto res = make_unique<FHE_PK>(params);
+  res->unpack(os);
+
+  return res;
+}
+
+rust::Vec<uint8_t> FHE_SK::to_rust_bytes() const
+{
+  octetStream os;
+  pack(os);
+
+  return os.to_rust_vec();
+}
+
+unique_ptr<FHE_SK> sk_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params)
+{
+  octetStream os(bytes);
+  auto res = make_unique<FHE_SK>(params);
+  res->unpack(os);
+
+  return res;
+}
+
+rust::Vec<uint8_t> FHE_KeyPair::to_rust_bytes() const
+{
+  octetStream os;
+  pk.pack(os);
+  sk.pack(os);
+
+  return os.to_rust_vec();
+}
+
+unique_ptr<FHE_KeyPair> keypair_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params)
+{
+  octetStream os(bytes);
+  auto res = make_unique<FHE_KeyPair>(params);
+  res->pk.unpack(os);
+  res->sk.unpack(os);
+
+  return res;
+}
+
 /**
  * Implementation
  */

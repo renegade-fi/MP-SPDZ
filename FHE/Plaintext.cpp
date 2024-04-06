@@ -61,6 +61,24 @@ unique_ptr<bigint> get_element_bigint(const Plaintext_mod_prime &plaintext, size
   return make_unique<bigint>(plaintext.element(i));
 }
 
+template <class T, class FD, class S>
+rust::Vec<uint8_t> Plaintext<T, FD, S>::to_rust_bytes() const
+{
+  octetStream os;
+  pack(os);
+
+  return os.to_rust_vec();
+}
+
+unique_ptr<Plaintext_mod_prime> plaintext_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params)
+{
+  octetStream os(bytes);
+  unique_ptr<Plaintext_mod_prime> pt(new Plaintext_mod_prime(params));
+  pt->unpack(os);
+
+  return pt;
+}
+
 /**
  * Implementation
  */

@@ -34,6 +34,26 @@ unique_ptr<Ciphertext> mul_ciphertexts(const Ciphertext &c0, const Ciphertext &c
   return result;
 }
 
+rust::Vec<uint8_t> Ciphertext::to_rust_bytes() const
+{
+  octetStream os;
+  pack(os);
+
+  unique_ptr<Ciphertext> new_ciphertext(new Ciphertext(*params));
+  new_ciphertext->unpack(os);
+
+  return os.to_rust_vec();
+}
+
+unique_ptr<Ciphertext> ciphertext_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params)
+{
+  octetStream os(bytes);
+  unique_ptr<Ciphertext> c(new Ciphertext(params));
+  c->unpack(os);
+
+  return c;
+}
+
 /**
  * Implementation
  */

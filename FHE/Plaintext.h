@@ -101,6 +101,9 @@ public:
   /// Initialization
   Plaintext(const FHE_Params &params);
 
+  /// Rust FFI serialization
+  rust::Vec<uint8_t> to_rust_bytes() const;
+
   /**
    * Clone the Plaintext, made explicit here to support cloning across the ffi
    */
@@ -291,5 +294,7 @@ uint32_t get_element_int(const Plaintext_mod_prime &plaintext, size_t i);
 void set_element_bigint(Plaintext_mod_prime &plaintext, size_t i, const bigint &value);
 /// Get the element at index i as a bigint value
 unique_ptr<bigint> get_element_bigint(const Plaintext_mod_prime &plaintext, size_t i);
+/// Deserialize a ciphertext
+unique_ptr<Plaintext_mod_prime> plaintext_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params);
 
 #endif
