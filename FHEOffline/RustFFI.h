@@ -11,30 +11,8 @@
 #include "FHE/Plaintext.h"
 #include "rust/cxx.h"
 
-/// A vector of plaintexts that can be added together
-class PlaintextVector
-{
-    AddableVector<Plaintext_mod_prime> plaintexts;
-
-public:
-    PlaintextVector();
-    PlaintextVector(const Plaintext_mod_prime &plaintext);
-    PlaintextVector(size_t size, FFT_Data &fd);
-    PlaintextVector(size_t size, const FHE_Params &params);
-    PlaintextVector(const PlaintextVector &other);
-
-    Plaintext_mod_prime operator[](size_t i) const;
-
-    void randomize();
-    void push_back(const Plaintext_mod_prime &plaintext);
-    void resize(size_t size, FFT_Data &fd);
-    void pop_back();
-    size_t size() const;
-
-    PlaintextVector &operator=(const PlaintextVector &other);
-
-    const AddableVector<Plaintext_mod_prime> &get_addable() const;
-};
+using PlaintextVector = AddableVector<Plaintext_mod_prime>;
+using CiphertextVector = AddableVector<Ciphertext>;
 
 /// Create a new plaintext vector
 unique_ptr<PlaintextVector>
@@ -58,6 +36,25 @@ void pop_plaintext_vector(PlaintextVector &vector);
 /// Get the size of the vector
 size_t plaintext_vector_size(const PlaintextVector &vector);
 
+/// Create a new ciphertext vector
+unique_ptr<CiphertextVector>
+new_ciphertext_vector(size_t size, const FHE_Params &params);
+
+/// Create a new ciphertext vector with a single element
+unique_ptr<CiphertextVector> new_ciphertext_vector_single(const Ciphertext &ciphertext);
+
+/// Get an element from the ciphertext vector
+unique_ptr<Ciphertext> get_ciphertext_vector_element(const CiphertextVector &vector, size_t index);
+
+/// Push a new ciphertext to the vector
+void push_ciphertext_vector(CiphertextVector &vector, const Ciphertext &ciphertext);
+
+/// Pop the last ciphertext from the vector
+void pop_ciphertext_vector(CiphertextVector &vector);
+
+/// Get the size of the vector
+size_t ciphertext_vector_size(const CiphertextVector &vector);
+
 /**
  * CiphertexrrtWithProof
  */
@@ -77,5 +74,7 @@ public:
 
 /// Encrypt a batch of elements and prove knowledge of plaintext
 unique_ptr<CiphertextWithProof> encrypt_and_prove_batch(const FHE_PK &pk, PlaintextVector &plaintexts, int sec = 128, bool diag = false);
+/// Verify the proof of knowledge of plaintext
+unique_ptr<CiphertextVector> verify_proof_of_knowledge(CiphertextWithProof &ciphertext_with_proof, const FHE_PK &pk, int sec = 128, bool diag = false);
 
 #endif
