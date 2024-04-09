@@ -63,18 +63,25 @@ size_t ciphertext_vector_size(const CiphertextVector &vector);
 class CiphertextWithProof
 {
 public:
-    int n_ciphertexts;
     octetStream proof_ciphertexts;
     octetStream proof_cleartexts;
-    AddableVector<Ciphertext> enc;
 
-    CiphertextWithProof(int n_ciphertexts, const octetStream &proof_ciphertexts, const octetStream &proof_cleartexts, const AddableVector<Ciphertext> &enc)
-        : n_ciphertexts(n_ciphertexts), proof_ciphertexts(proof_ciphertexts), proof_cleartexts(proof_cleartexts), enc(enc) {}
+    CiphertextWithProof(const octetStream &proof_ciphertexts, const octetStream &proof_cleartexts)
+        : proof_ciphertexts(proof_ciphertexts), proof_cleartexts(proof_cleartexts) {}
+
+    /// Clone the ciphertext with proof
+    unique_ptr<CiphertextWithProof> clone() const
+    {
+        return make_unique<CiphertextWithProof>(proof_ciphertexts, proof_cleartexts);
+    }
+    rust::Vec<uint8_t> to_rust_bytes() const;
 };
 
 /// Encrypt a batch of elements and prove knowledge of plaintext
 unique_ptr<CiphertextWithProof> encrypt_and_prove_batch(const FHE_PK &pk, PlaintextVector &plaintexts, int sec = 128, bool diag = false);
 /// Verify the proof of knowledge of plaintext
 unique_ptr<CiphertextVector> verify_proof_of_knowledge(CiphertextWithProof &ciphertext_with_proof, const FHE_PK &pk, int sec = 128, bool diag = false);
+/// Deserialize a ciphertext with proof from bytes
+unique_ptr<CiphertextWithProof> ciphertext_with_proof_from_rust_bytes(const rust::Slice<const uint8_t> bytes);
 
 #endif

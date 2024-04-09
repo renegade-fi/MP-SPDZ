@@ -4,6 +4,7 @@
 #include "FHEOffline/Prover.h"
 #include "FHEOffline/Verifier.h"
 #include "FHE/AddableVector.h"
+#include "rust/cxx.h"
 
 /**
  * PlaintextVector
@@ -94,6 +95,31 @@ size_t ciphertext_vector_size(const CiphertextVector &vector)
  * CiphertextWithProof
  */
 
+rust::Vec<uint8_t> CiphertextWithProof::to_rust_bytes() const
+{
+    octetStream os(proof_ciphertexts.get_length() + proof_cleartexts.get_length());
+    os.store(proof_ciphertexts.get_length());
+    os.concat(proof_ciphertexts);
+    os.concat(proof_cleartexts);
+
+    return os.to_rust_vec();
+}
+
+unique_ptr<CiphertextWithProof> ciphertext_with_proof_from_rust_bytes(const rust::Slice<const uint8_t> bytes)
+{
+    octetStream os(bytes);
+    size_t size;
+    os.get(size);
+
+    octetStream proof_ciphertexts(size);
+    octetStream proof_cleartexts(os.get_length() - size);
+
+    os.consume(proof_ciphertexts, size);
+    os.consume(proof_cleartexts, os.get_length() - size);
+
+    return make_unique<CiphertextWithProof>(proof_ciphertexts, proof_cleartexts);
+}
+
 /// Encrypt the value and store randomness
 void encrypt_with_randomness(vector<Ciphertext> &ciphers, AddableVector<Plaintext_mod_prime> &plaintexts, Proof::Randomness &randomness, const FHE_PK &pk)
 {
@@ -115,9 +141,6 @@ void encrypt_with_randomness(vector<Ciphertext> &ciphers, AddableVector<Plaintex
     }
 }
 
-// FOR OPTIMIZATION
-// 1. Don't encrypt, looks like the helpers do that for me
-// 2. Decrease proof.U?
 unique_ptr<CiphertextWithProof> encrypt_and_prove_batch(const FHE_PK &pk, PlaintextVector &plaintexts, int sec, bool diag)
 {
     // Check the proof batching width
@@ -148,7 +171,7 @@ unique_ptr<CiphertextWithProof> encrypt_and_prove_batch(const FHE_PK &pk, Plaint
     Prover<FFT_Data, Plaintext_mod_prime> prover(proof, fd);
     prover.NIZKPoK(proof, ciphertext_data, cleartext_data, pk, ciphers, plaintexts, randomness);
 
-    return unique_ptr<CiphertextWithProof>(new CiphertextWithProof(n, ciphertext_data, cleartext_data, ciphers));
+    return unique_ptr<CiphertextWithProof>(new CiphertextWithProof(ciphertext_data, cleartext_data));
 }
 
 unique_ptr<CiphertextVector> verify_proof_of_knowledge(CiphertextWithProof &ciphertext_with_proof, const FHE_PK &pk, int sec, bool diag)
