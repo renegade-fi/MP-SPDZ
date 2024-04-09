@@ -14,6 +14,9 @@
 using PlaintextVector = AddableVector<Plaintext_mod_prime>;
 using CiphertextVector = AddableVector<Ciphertext>;
 
+/// Create a new empty plaintext vector
+unique_ptr<PlaintextVector> new_empty_plaintext_vector();
+
 /// Create a new plaintext vector
 unique_ptr<PlaintextVector>
 new_plaintext_vector(size_t size, const FHE_Params &params);
@@ -26,6 +29,9 @@ unique_ptr<Plaintext_mod_prime> get_plaintext_vector_element(const PlaintextVect
 
 /// Randomize the plaintexts in the vector
 void randomize_plaintext_vector(PlaintextVector &vector);
+
+/// Generate a random plaintext vector
+unique_ptr<PlaintextVector> random_plaintext_vector(size_t size, const FHE_Params &params);
 
 /// Push a new plaintext to the vector
 void push_plaintext_vector(PlaintextVector &vector, const Plaintext_mod_prime &plaintext);
@@ -45,6 +51,9 @@ unique_ptr<CiphertextVector> new_ciphertext_vector_single(const Ciphertext &ciph
 
 /// Get an element from the ciphertext vector
 unique_ptr<Ciphertext> get_ciphertext_vector_element(const CiphertextVector &vector, size_t index);
+
+/// Get the params from a plaintext vector
+unique_ptr<FHE_Params> get_plaintext_vector_params(const PlaintextVector &vector);
 
 /// Push a new ciphertext to the vector
 void push_ciphertext_vector(CiphertextVector &vector, const Ciphertext &ciphertext);

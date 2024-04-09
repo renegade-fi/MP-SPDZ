@@ -2,6 +2,7 @@
 #define _bigint
 
 #include <iostream>
+#include <memory>
 using namespace std;
 
 #include <stddef.h>
