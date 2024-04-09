@@ -11,6 +11,11 @@
  */
 
 // Factory functions
+unique_ptr<PlaintextVector> new_empty_plaintext_vector()
+{
+    return make_unique<PlaintextVector>();
+}
+
 unique_ptr<PlaintextVector> new_plaintext_vector(size_t size, const FHE_Params &params)
 {
     return make_unique<PlaintextVector>(size, params.get_plaintext_field_data<FFT_Data>());
@@ -35,6 +40,14 @@ void randomize_plaintext_vector(PlaintextVector &vector)
     PRNG G;
     G.ReSeed();
     vector.randomize(G);
+}
+
+unique_ptr<PlaintextVector> random_plaintext_vector(size_t size, const FHE_Params &params)
+{
+    auto res = make_unique<PlaintextVector>(size, params.get_plaintext_field_data<FFT_Data>());
+    randomize_plaintext_vector(*res);
+
+    return res;
 }
 
 void push_plaintext_vector(PlaintextVector &vector, const Plaintext_mod_prime &plaintext)
@@ -115,7 +128,7 @@ unique_ptr<CiphertextWithProof> ciphertext_with_proof_from_rust_bytes(const rust
     octetStream proof_cleartexts(os.get_length() - size);
 
     os.consume(proof_ciphertexts, size);
-    os.consume(proof_cleartexts, os.get_length() - size);
+    os.consume(proof_cleartexts, os.left());
 
     return make_unique<CiphertextWithProof>(proof_ciphertexts, proof_cleartexts);
 }
