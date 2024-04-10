@@ -17,6 +17,13 @@ unique_ptr<Plaintext_mod_prime> new_plaintext(const FHE_Params &params)
   return make_unique<Plaintext_mod_prime>(params);
 }
 
+void randomize_plaintext(Plaintext_mod_prime &plaintext)
+{
+  PRNG G;
+  G.ReSeed();
+  plaintext.randomize(G);
+}
+
 unique_ptr<Plaintext_mod_prime> add_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y)
 {
   return make_unique<Plaintext_mod_prime>((x + y));

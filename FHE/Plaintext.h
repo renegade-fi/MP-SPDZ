@@ -278,6 +278,8 @@ typedef Plaintext_<FFT_Data> Plaintext_mod_prime;
 
 /// Create a new plaintext object
 unique_ptr<Plaintext_mod_prime> new_plaintext(const FHE_Params &params);
+/// Randomize a plaintext
+void randomize_plaintext(Plaintext_mod_prime &plaintext);
 
 /// Add two plaintexts together
 unique_ptr<Plaintext_mod_prime> add_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y);

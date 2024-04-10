@@ -60,6 +60,11 @@ void pop_plaintext_vector(PlaintextVector &vector)
     vector.pop_back();
 }
 
+void set_plaintext_vector_element(PlaintextVector &vector, size_t index, const Plaintext_mod_prime &plaintext)
+{
+    vector[index] = plaintext;
+}
+
 size_t plaintext_vector_size(const PlaintextVector &vector)
 {
     return vector.size();
@@ -89,6 +94,11 @@ unique_ptr<Ciphertext> get_ciphertext_vector_element(const CiphertextVector &vec
     return make_unique<Ciphertext>(vector[index]);
 }
 
+void set_ciphertext_vector_element(CiphertextVector &vector, size_t index, const Ciphertext &ciphertext)
+{
+    vector[index] = ciphertext;
+}
+
 void push_ciphertext_vector(CiphertextVector &vector, const Ciphertext &ciphertext)
 {
     vector.push_back(ciphertext);
@@ -102,6 +112,23 @@ void pop_ciphertext_vector(CiphertextVector &vector)
 size_t ciphertext_vector_size(const CiphertextVector &vector)
 {
     return vector.size();
+}
+
+rust::Vec<uint8_t> ciphertext_vector_to_rust_bytes(const CiphertextVector &vec)
+{
+    octetStream os;
+    vec.pack(os);
+
+    return os.to_rust_vec();
+}
+
+unique_ptr<CiphertextVector> ciphertext_vector_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params)
+{
+    octetStream os(bytes);
+    unique_ptr<CiphertextVector> vec = make_unique<CiphertextVector>();
+    vec->unpack(os, params);
+
+    return vec;
 }
 
 /**
