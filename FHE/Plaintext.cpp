@@ -8,6 +8,24 @@
 #include "Math/Z2k.hpp"
 #include "Math/modp.hpp"
 
+// Forward declaration
+template <>
+void Plaintext<gfp, FFT_Data, bigint>::from_poly() const
+{
+  if (type != Polynomial)
+  {
+    return;
+  }
+
+  Ring_Element e(*Field_Data, polynomial);
+  e.from(b);
+  e.change_rep(evaluation);
+  a.resize(num_slots());
+  for (unsigned int i = 0; i < a.size(); i++)
+    a[i] = gfp(e.get_element(i), e.get_FFTD().get_prD());
+  type = Both;
+}
+
 /**
  * FFI Exports
  */
@@ -22,20 +40,28 @@ void randomize_plaintext(Plaintext_mod_prime &plaintext)
   PRNG G;
   G.ReSeed();
   plaintext.randomize(G);
+
+  plaintext.from_poly();
 }
 
 unique_ptr<Plaintext_mod_prime> add_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y)
 {
+  x.from_poly();
+  y.from_poly();
   return make_unique<Plaintext_mod_prime>((x + y));
 }
 
 unique_ptr<Plaintext_mod_prime> sub_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y)
 {
+  x.from_poly();
+  y.from_poly();
   return make_unique<Plaintext_mod_prime>((x - y));
 }
 
 unique_ptr<Plaintext_mod_prime> mul_plaintexts(const Plaintext_mod_prime &x, const Plaintext_mod_prime &y)
 {
+  x.from_poly();
+  y.from_poly();
   return make_unique<Plaintext_mod_prime>((x * y));
 }
 
@@ -128,23 +154,6 @@ void Plaintext<gfp, FFT_Data, bigint>::from(const Generator<bigint> &source) con
     source.get(bigint::tmp);
     x = bigint::tmp;
   }
-}
-
-template <>
-void Plaintext<gfp, FFT_Data, bigint>::from_poly() const
-{
-  if (type != Polynomial)
-  {
-    return;
-  }
-
-  Ring_Element e(*Field_Data, polynomial);
-  e.from(b);
-  e.change_rep(evaluation);
-  a.resize(num_slots());
-  for (unsigned int i = 0; i < a.size(); i++)
-    a[i] = gfp(e.get_element(i), e.get_FFTD().get_prD());
-  type = Both;
 }
 
 template <>
@@ -405,10 +414,10 @@ template <class T, class FD, class S>
 Plaintext<T, FD, S> &Plaintext<T, FD, S>::operator+=(
     const Plaintext &y)
 {
-  if (Field_Data != y.Field_Data)
-  {
-    throw field_mismatch();
-  }
+  // if (Field_Data != y.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
 
   to_poly();
   y.to_poly();
@@ -424,14 +433,14 @@ template <>
 void add(Plaintext<gfp, FFT_Data, bigint> &z, const Plaintext<gfp, FFT_Data, bigint> &x,
          const Plaintext<gfp, FFT_Data, bigint> &y)
 {
-  if (z.Field_Data != x.Field_Data)
-  {
-    throw field_mismatch();
-  }
-  if (z.Field_Data != y.Field_Data)
-  {
-    throw field_mismatch();
-  }
+  // if (z.Field_Data != x.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
+  // if (z.Field_Data != y.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
 
   if (x.type == Both && y.type != Both)
   {
@@ -476,14 +485,14 @@ template <>
 void add(Plaintext<gf2n_short, P2Data, int> &z, const Plaintext<gf2n_short, P2Data, int> &x,
          const Plaintext<gf2n_short, P2Data, int> &y)
 {
-  if (z.Field_Data != x.Field_Data)
-  {
-    throw field_mismatch();
-  }
-  if (z.Field_Data != y.Field_Data)
-  {
-    throw field_mismatch();
-  }
+  // if (z.Field_Data != x.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
+  // if (z.Field_Data != y.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
 
   if (x.type == Both && y.type != Both)
   {
@@ -524,14 +533,14 @@ template <>
 void sub(Plaintext<gfp, FFT_Data, bigint> &z, const Plaintext<gfp, FFT_Data, bigint> &x,
          const Plaintext<gfp, FFT_Data, bigint> &y)
 {
-  if (z.Field_Data != x.Field_Data)
-  {
-    throw field_mismatch();
-  }
-  if (z.Field_Data != y.Field_Data)
-  {
-    throw field_mismatch();
-  }
+  // if (z.Field_Data != x.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
+  // if (z.Field_Data != y.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
 
   if (x.type == Both && y.type != Both)
   {
@@ -577,14 +586,14 @@ template <>
 void sub(Plaintext<gf2n_short, P2Data, int> &z, const Plaintext<gf2n_short, P2Data, int> &x,
          const Plaintext<gf2n_short, P2Data, int> &y)
 {
-  if (z.Field_Data != x.Field_Data)
-  {
-    throw field_mismatch();
-  }
-  if (z.Field_Data != y.Field_Data)
-  {
-    throw field_mismatch();
-  }
+  // if (z.Field_Data != x.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
+  // if (z.Field_Data != y.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
 
   if (x.type == Both && y.type != Both)
   {
@@ -624,14 +633,14 @@ void sub(Plaintext<gf2n_short, P2Data, int> &z, const Plaintext<gf2n_short, P2Da
 template <class T, class FD, class S>
 void mul(Plaintext<T, FD, S> &z, const Plaintext<T, FD, S> &x, const Plaintext<T, FD, S> &y)
 {
-  if (z.Field_Data != x.Field_Data)
-  {
-    throw field_mismatch();
-  }
-  if (z.Field_Data != y.Field_Data)
-  {
-    throw field_mismatch();
-  }
+  // if (z.Field_Data != x.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
+  // if (z.Field_Data != y.Field_Data)
+  // {
+  //   throw field_mismatch();
+  // }
 
   if (y.type == Polynomial)
   {
