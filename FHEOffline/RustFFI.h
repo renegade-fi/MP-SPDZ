@@ -39,6 +39,9 @@ void push_plaintext_vector(PlaintextVector &vector, const Plaintext_mod_prime &p
 /// Pop the last plaintext from the vector
 void pop_plaintext_vector(PlaintextVector &vector);
 
+/// Set an element in the plaintext vector
+void set_plaintext_vector_element(PlaintextVector &vector, size_t index, const Plaintext_mod_prime &plaintext);
+
 /// Get the size of the vector
 size_t plaintext_vector_size(const PlaintextVector &vector);
 
@@ -52,6 +55,9 @@ unique_ptr<CiphertextVector> new_ciphertext_vector_single(const Ciphertext &ciph
 /// Get an element from the ciphertext vector
 unique_ptr<Ciphertext> get_ciphertext_vector_element(const CiphertextVector &vector, size_t index);
 
+/// Set an element in the ciphertext vector
+void set_ciphertext_vector_element(CiphertextVector &vector, size_t index, const Ciphertext &ciphertext);
+
 /// Get the params from a plaintext vector
 unique_ptr<FHE_Params> get_plaintext_vector_params(const PlaintextVector &vector);
 
@@ -63,6 +69,12 @@ void pop_ciphertext_vector(CiphertextVector &vector);
 
 /// Get the size of the vector
 size_t ciphertext_vector_size(const CiphertextVector &vector);
+
+/// Serialize a ciphertext vector to bytes
+rust::Vec<uint8_t> ciphertext_vector_to_rust_bytes(const CiphertextVector &vector);
+
+/// Deserialize a ciphertext vector from bytes
+unique_ptr<CiphertextVector> ciphertext_vector_from_rust_bytes(const rust::Slice<const uint8_t> bytes, const FHE_Params &params);
 
 /**
  * CiphertexrrtWithProof

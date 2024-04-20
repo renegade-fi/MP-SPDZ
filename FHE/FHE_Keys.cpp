@@ -311,10 +311,10 @@ void FHE_SK::decrypt(Plaintext<T, FD, S> &mess, const Ciphertext &c) const
 
 Rq_Element FHE_SK::quasi_decrypt(const Ciphertext &c) const
 {
-  if (&c.get_params() != params)
-  {
-    throw params_mismatch();
-  }
+  // if (&c.get_params() != params)
+  // {
+  //   throw params_mismatch();
+  // }
 
   auto ans = c.c0() - c.c1() * sk;
   ans.change_rep(polynomial);
